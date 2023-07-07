@@ -1,0 +1,42 @@
+﻿@page "/frequentwords"
+@inject HttpClient Http
+
+<PageTitle>Word Frequency</PageTitle>
+
+<h1>Word Frequency</h1>
+
+<p>Display most frequent words from news outlet titles.</p>
+
+@if (words == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    var orderedWords = words.OrderByDescending(word => word.Frequency);
+    var wordsToDisplay = 10;
+    @for (int i = 0; i <= wordsToDisplay; i++)
+    {
+        var word = orderedWords.ElementAt(i);
+        <ul>
+            <li>@word.Word - @word.Frequency</li>
+        </ul>
+    }
+}
+
+@code {
+    private WordFrequency[]? words;
+
+    protected override async Task OnInitializedAsync()
+    {
+        words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
+    }
+
+    public class WordFrequency
+    {
+        public string Word { get; set; }
+        public int Frequency { get; set; }
+        public string NewsOutlet { get; set; }
+    }
+
+}
