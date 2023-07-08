@@ -13,15 +13,20 @@
 }
 else
 {
-    var orderedWords = words.OrderByDescending(word => word.Frequency);
-    var wordsToDisplay = 10;
-    @for (int i = 0; i <= wordsToDisplay; i++)
+    var wordsToDisplay = 15;
+
+    Dictionary<string, int> grouped = GroupWords(words);
+
+    var orderedWords = grouped.OrderByDescending(word => word.Value)
+                              .Take(wordsToDisplay);
+
+    foreach (KeyValuePair<string, int> word in orderedWords)
     {
-        var word = orderedWords.ElementAt(i);
         <ul>
-            <li>@word.Word - @word.Frequency</li>
+            <li>@word.Key - @word.Value</li>
         </ul>
     }
+
 }
 
 @code {
@@ -39,4 +44,21 @@ else
         public string NewsOutlet { get; set; }
     }
 
+    public static Dictionary<string, int> GroupWords(WordFrequency[] words)
+    {
+        var grouped = new Dictionary<string, int>();
+        foreach (var word in words)
+        {
+            if (grouped.ContainsKey(word.Word))
+            {
+                grouped[word.Word] += word.Frequency;
+            }
+            else
+            {
+                grouped.Add(word.Word, word.Frequency);
+            }
+        }
+
+        return grouped;
+    }
 }
