@@ -54,6 +54,7 @@
         {
             var words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
             ApplicationState.GroupedWords = GroupWords(words);
+            ApplicationState.Words = words.ToList();
         }
         await base.OnAfterRenderAsync(firstRender);
     }

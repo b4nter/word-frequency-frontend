@@ -2,13 +2,14 @@
 {
     public class AppState
     {
-        public List<WordFrequency>? GroupedWords {get;set;}
-    }
+        public List<WordFrequency>? GroupedWords { get; set; }
+        public List<WordFrequency>? Words { get; set; }
+}
 
-    public class WordFrequency
-    {
-        public string? Word { get; set; }
-        public int Frequency { get; set; }
-        public string? NewsOutlet { get; set; }
-    }
+public class WordFrequency
+{
+    public string? Word { get; set; }
+    public int Frequency { get; set; }
+    public string? NewsOutlet { get; set; }
+}
 }
