@@ -7,58 +7,39 @@
 
 <p>Display most frequent words from news outlet titles.</p>
 
-@if (words == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    var wordsToDisplay = 15;
-
-    Dictionary<string, int> grouped = GroupWords(words);
-
-    var orderedWords = grouped.OrderByDescending(word => word.Value)
-                              .Take(wordsToDisplay);
-
-    foreach (KeyValuePair<string, int> word in orderedWords)
-    {
-        <ul>
-            <li>@word.Key - @word.Value</li>
-        </ul>
-    }
-
-}
+<Grid @ref="grid"
+      TItem="WordFrequency"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="EmployeesDataProvider"
+      AllowFiltering="true"
+      AllowSorting="true"
+      Responsive="true"
+      AllowPaging="true"
+      PageSize="10"
+      PageSizeSelectorItems="new int[3] { 10, 20, 50 }"
+      PaginationItemsTextFormat="">
+    <GridColumn TItem="WordFrequency" HeaderText="Word" PropertyName="Word" SortKeySelector="item => item.Word">
+        @context.Word
+    </GridColumn>
+    <GridColumn TItem="WordFrequency" HeaderText="Frequency" PropertyName="Frequency" SortKeySelector="item => item.Frequency">
+        @context.Frequency
+    </GridColumn>
+</Grid>
 
 @code {
-    private WordFrequency[]? words;
+    [CascadingParameter]
+    public AppState ApplicationState { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    BlazorBootstrap.Grid<WordFrequency> grid = default!;
+    //private IEnumerable<WordFrequency>? words = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
+        await base.OnAfterRenderAsync(firstRender);
     }
 
-    public class WordFrequency
+    private async Task<GridDataProviderResult<WordFrequency>> EmployeesDataProvider(GridDataProviderRequest<WordFrequency> request)
     {
-        public string Word { get; set; }
-        public int Frequency { get; set; }
-        public string NewsOutlet { get; set; }
-    }
-
-    public static Dictionary<string, int> GroupWords(WordFrequency[] words)
-    {
-        var grouped = new Dictionary<string, int>();
-        foreach (var word in words)
-        {
-            if (grouped.ContainsKey(word.Word))
-            {
-                grouped[word.Word] += word.Frequency;
-            }
-            else
-            {
-                grouped.Add(word.Word, word.Frequency);
-            }
-        }
-
-        return grouped;
+        return await Task.FromResult(request.ApplyTo(ApplicationState.GroupedWords ?? new List<WordFrequency>()));
     }
 }

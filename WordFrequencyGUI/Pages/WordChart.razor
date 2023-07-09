@@ -1,0 +1,103 @@
+﻿@page "/word-chart"
+@inject HttpClient Http
+
+@using BlazorBootstrap.Extensions
+@using Color = System.Drawing.Color
+
+<BarChart @ref="barChart" Class="mb-4" />
+
+@code {
+    [CascadingParameter]
+    public AppState ApplicationState { get; set; }
+
+    private List<string?> labelTopTenWords;
+    private BarChart barChart;
+
+    private IEnumerable<WordFrequency>? words = default!;
+    private ChartData chartData;
+
+    Random random = new Random();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RenderWordFrequencyAsync();
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async Task RenderWordFrequencyAsync()
+    {
+        chartData = GetChartData();
+        LoadBarChartDataset();
+
+        var options = new BarChartOptions();
+
+        options.Interaction.Mode = InteractionMode.Index;
+
+        options.Plugins.Title.Text = "WORD FREQUENCY";
+        options.Plugins.Title.Display = true;
+        options.Plugins.Title.Font.Size = 20;
+
+        options.Responsive = true;
+
+        options.Scales.X.Title.Text = "Words";
+        options.Scales.X.Title.Display = true;
+
+        options.Scales.Y.Title.Text = "Words";
+        options.Scales.Y.Title.Display = true;
+
+        await barChart.UpdateAsync(chartData, options);
+    }
+
+    private ChartData GetChartData()
+    {
+        labelTopTenWords = ApplicationState.GroupedWords
+                            .Take(10)
+                            .Select(word => word.Word)
+                            .ToList();
+
+        return new ChartData
+            {
+                Labels = labelTopTenWords,
+                Datasets = new List<IChartDataset>()
+            };
+    }
+
+    private void LoadBarChartDataset()
+    {
+        var newsOutlets = ApplicationState.Words.DistinctBy(word => word.NewsOutlet);
+
+        foreach(var newsOutelt in newsOutlets)
+        {
+            chartData.Datasets.Add(GetWordBarChartDataset(newsOutelt.NewsOutlet));
+        }
+    }
+
+    private BarChartDataset GetWordBarChartDataset(string newsOutlet)
+    {
+        var randomColour = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
+
+        var data = labelTopTenWords
+        .Select(labelWord =>
+        {
+            var filtered = ApplicationState.Words
+                                .Where(word => word.Word == labelWord && word.NewsOutlet
+                                .Equals(newsOutlet));
+
+            double value = filtered.FirstOrDefault()?.Frequency ?? 0;
+            return value;
+        })
+        .ToList();
+
+        return new BarChartDataset()
+            {
+                Label = newsOutlet,
+                Data = data,
+                BackgroundColor = new List<string> { randomColour.ToRgbString() },
+                BorderColor = new List<string> { randomColour.ToRgbString() },
+                BorderWidth = new List<double> { 0 },
+            };
+    }
+}
