@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject HttpClient Http
 @using BlazorBootstrap
 
 <div class="bb-page">
@@ -11,7 +12,9 @@
     <main>
         <article class="content px-4">
             <div class="py-2">
-                @Body
+                <CascadingValue Value="@ApplicationState">
+                    @Body
+                </CascadingValue>
             </div>
         </article>
     </main>
@@ -38,9 +41,30 @@
             new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
             new NavItem { Id = "2", Href = "/frequentwords", IconName = IconName.Table, Text = "Word Frequency"},
             new NavItem { Id = "2", Href = "/word-chart", IconName = IconName.BarChartLine, Text = "Word Chart"},
-            new NavItem { Id = "3", Href = "/grid", IconName = IconName.Grid, Text = "Grid Demo"},
         };
 
         return navItems;
+    }
+
+    public AppState ApplicationState { get; set; } = new AppState();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
+            ApplicationState.GroupedWords = GroupWords(words);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private static List<WordFrequency> GroupWords(IEnumerable<WordFrequency>? words)
+    {
+        var grouped = words.GroupBy(word => word.Word)
+                   .Select(group => new WordFrequency { Word = group.Key, Frequency = group.Sum(word => word.Frequency) })
+                   .OrderByDescending(word => word.Frequency)
+                   .ToList();
+
+        return grouped;
     }
 }
