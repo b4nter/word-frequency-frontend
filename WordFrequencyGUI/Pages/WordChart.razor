@@ -10,7 +10,7 @@
     [CascadingParameter]
     public AppState ApplicationState { get; set; }
 
-    private List<string?> labelTopTenWords;
+    private List<string?> labelTopWords;
     private BarChart barChart;
 
     private IEnumerable<WordFrequency>? words = default!;
@@ -36,7 +36,7 @@
 
         options.Interaction.Mode = InteractionMode.Index;
 
-        options.Plugins.Title.Text = "WORD FREQUENCY";
+        options.Plugins.Title.Text = "WORD CHART";
         options.Plugins.Title.Display = true;
         options.Plugins.Title.Font.Size = 20;
 
@@ -45,7 +45,7 @@
         options.Scales.X.Title.Text = "Words";
         options.Scales.X.Title.Display = true;
 
-        options.Scales.Y.Title.Text = "Words";
+        options.Scales.Y.Title.Text = "Frequency";
         options.Scales.Y.Title.Display = true;
 
         await barChart.UpdateAsync(chartData, options);
@@ -53,14 +53,15 @@
 
     private ChartData GetChartData()
     {
-        labelTopTenWords = ApplicationState.GroupedWords
-                            .Take(10)
+        int wordsToShow = 15;
+        labelTopWords = ApplicationState.GroupedWords
+                            .Take(wordsToShow)
                             .Select(word => word.Word)
                             .ToList();
 
         return new ChartData
             {
-                Labels = labelTopTenWords,
+                Labels = labelTopWords,
                 Datasets = new List<IChartDataset>()
             };
     }
@@ -79,7 +80,7 @@
     {
         var randomColour = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
 
-        var data = labelTopTenWords
+        var data = labelTopWords
         .Select(labelWord =>
         {
             var filtered = ApplicationState.Words
