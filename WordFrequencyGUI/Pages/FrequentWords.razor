@@ -1,16 +1,14 @@
-﻿@page "/frequentwords"
-@inject HttpClient Http
+﻿@page "/"
 
 <PageTitle>Word Frequency</PageTitle>
 
 <h1>Word Frequency</h1>
-
-<p>Display most frequent words from news outlet titles.</p>
+<h3>This is a small website to analyse how often words appear in news outlet titles. </h3>
 
 <Grid @ref="grid"
       TItem="WordFrequency"
       Class="table table-hover table-bordered table-striped"
-      DataProvider="EmployeesDataProvider"
+      DataProvider="WordDataProvider"
       AllowFiltering="true"
       AllowSorting="true"
       Responsive="true"
@@ -37,7 +35,7 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task<GridDataProviderResult<WordFrequency>> EmployeesDataProvider(GridDataProviderRequest<WordFrequency> request)
+    private async Task<GridDataProviderResult<WordFrequency>> WordDataProvider(GridDataProviderRequest<WordFrequency> request)
     {
         return await Task.FromResult(request.ApplyTo(ApplicationState.GroupedWords ?? new List<WordFrequency>()));
     }
