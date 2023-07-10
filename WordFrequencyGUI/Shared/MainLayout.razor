@@ -1,6 +1,5 @@
 ﻿@inherits LayoutComponentBase
 @inject HttpClient Http
-@using BlazorBootstrap
 
 <div class="bb-page">
 
@@ -11,20 +10,30 @@
     <main>
         <article class="content px-4">
             <div class="py-2">
-                <CascadingValue Value="@ApplicationState">
-                    @Body
-                </CascadingValue>
+                @if (IsDataLoaded)
+                {
+                    <CascadingValue Value="@ApplicationState">
+                        @Body
+                    </CascadingValue>
+                }
+                else
+                {
+                    <p>Loading...</p>
+                }
             </div>
+
         </article>
     </main>
 
 </div>
-<Preload />
 
 @code {
     private Sidebar sidebar = default!;
     private IEnumerable<NavItem> navItems = default!;
 
+    private Boolean IsDataLoaded { get; set; } = false;
+
+    public AppState ApplicationState { get; set; } = new AppState();
     private async Task<SidebarDataProviderResult> SidebarDataProvider(SidebarDataProviderRequest request)
     {
         if (navItems is null)
@@ -44,17 +53,12 @@
         return navItems;
     }
 
-    public AppState ApplicationState { get; set; } = new AppState();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            var words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
-            ApplicationState.GroupedWords = GroupWords(words);
-            ApplicationState.Words = words.ToList();
-        }
-        await base.OnAfterRenderAsync(firstRender);
+        var words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
+        ApplicationState.GroupedWords = GroupWords(words);
+        ApplicationState.Words = words.ToList();
+        IsDataLoaded = true;
     }
 
     private static List<WordFrequency> GroupWords(IEnumerable<WordFrequency>? words)

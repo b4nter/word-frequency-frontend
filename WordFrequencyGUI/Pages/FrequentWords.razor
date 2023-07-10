@@ -1,5 +1,4 @@
 ﻿@page "/"
-@inject HttpClient Http
 
 <PageTitle>Word Frequency</PageTitle>
 
@@ -9,7 +8,7 @@
 <Grid @ref="grid"
       TItem="WordFrequency"
       Class="table table-hover table-bordered table-striped"
-      DataProvider="EmployeesDataProvider"
+      DataProvider="WordDataProvider"
       AllowFiltering="true"
       AllowSorting="true"
       Responsive="true"
@@ -36,7 +35,7 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private async Task<GridDataProviderResult<WordFrequency>> EmployeesDataProvider(GridDataProviderRequest<WordFrequency> request)
+    private async Task<GridDataProviderResult<WordFrequency>> WordDataProvider(GridDataProviderRequest<WordFrequency> request)
     {
         return await Task.FromResult(request.ApplyTo(ApplicationState.GroupedWords ?? new List<WordFrequency>()));
     }
