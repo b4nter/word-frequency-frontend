@@ -55,7 +55,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var words = await Http.GetFromJsonAsync<WordFrequency[]>("api/WordFrequency");
+        var words = await Http.GetFromJsonAsync<WordFrequency[]>("sample-data/words.json");
         ApplicationState.GroupedWords = GroupWords(words);
         ApplicationState.Words = words.ToList();
         IsDataLoaded = true;
