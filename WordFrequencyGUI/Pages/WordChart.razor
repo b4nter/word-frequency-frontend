@@ -1,6 +1,5 @@
 ﻿@page "/word-chart"
 
-@using BlazorBootstrap.Extensions
 @using Color = System.Drawing.Color
 
 <BarChart @ref="barChart" Class="mb-4" />
@@ -86,7 +85,7 @@
                                 .Where(word => word.Word == labelWord && word.NewsOutlet
                                 .Equals(newsOutlet));
 
-            double value = filtered.FirstOrDefault()?.Frequency ?? 0;
+            double? value = filtered.FirstOrDefault()?.Frequency ?? 0;
             return value;
         })
         .ToList();
