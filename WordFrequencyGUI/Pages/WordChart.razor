@@ -10,43 +10,27 @@
 
     private List<string?> labelTopWords;
     private BarChart barChart;
+    private BarChartOptions barChartOptions = default!;
 
     private IEnumerable<WordFrequency>? words = default!;
     private ChartData chartData;
 
     Random random = new Random();
 
+    protected override void OnInitialized()
+    {
+        chartData = GetChartData();
+        LoadBarChartDataset();
+        LoadBarChartOptions();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await RenderWordFrequencyAsync();
+            await barChart.InitializeAsync(chartData, barChartOptions);
         }
         await base.OnAfterRenderAsync(firstRender);
-    }
-
-    public async Task RenderWordFrequencyAsync()
-    {
-        chartData = GetChartData();
-        LoadBarChartDataset();
-
-        var options = new BarChartOptions();
-
-        options.Interaction.Mode = InteractionMode.Index;
-
-        options.Plugins.Title.Text = "WORD CHART";
-        options.Plugins.Title.Display = true;
-        options.Plugins.Title.Font.Size = 20;
-
-        options.Responsive = true;
-
-        options.Scales.X.Title.Text = "Words";
-        options.Scales.X.Title.Display = true;
-
-        options.Scales.Y.Title.Text = "Frequency";
-        options.Scales.Y.Title.Display = true;
-
-        await barChart.UpdateAsync(chartData, options);
     }
 
     private ChartData GetChartData()
@@ -62,6 +46,28 @@
                 Labels = labelTopWords,
                 Datasets = new List<IChartDataset>()
             };
+    }
+
+    private void LoadBarChartOptions()
+    {
+        barChartOptions = new BarChartOptions();
+
+        barChartOptions.Interaction.Mode = InteractionMode.Index;
+
+        barChartOptions.Plugins.Title.Text = "WORD CHART";
+        barChartOptions.Plugins.Title.Display = true;
+        barChartOptions.Plugins.Title.Font = new ChartFont();
+        barChartOptions.Plugins.Title.Font.Size = 20;
+
+        barChartOptions.Responsive = true;
+
+        barChartOptions.Scales.X.Title = new ChartAxesTitle();
+        barChartOptions.Scales.X.Title.Text = "Words";
+        barChartOptions.Scales.X.Title.Display = true;
+
+        barChartOptions.Scales.Y.Title = new ChartAxesTitle();
+        barChartOptions.Scales.Y.Title.Text = "Frequency";
+        barChartOptions.Scales.Y.Title.Display = true;
     }
 
     private void LoadBarChartDataset()
