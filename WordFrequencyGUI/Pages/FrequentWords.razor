@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject HttpClient Http
 
 <PageTitle>Word Frequency</PageTitle>
 
@@ -15,28 +16,94 @@
       AllowPaging="true"
       PageSize="10"
       PageSizeSelectorItems="new int[3] { 10, 20, 50 }"
-      PaginationItemsTextFormat="">
+      AllowRowClick="true"
+      OnRowClick="ShowTitlesContainingWord"
+      
+>
     <GridColumn TItem="WordFrequency" HeaderText="Word" PropertyName="Word" SortKeySelector="item => item.Word">
         @context.Word
     </GridColumn>
     <GridColumn TItem="WordFrequency" HeaderText="Frequency" PropertyName="Frequency" SortKeySelector="item => item.Frequency">
         @context.Frequency
     </GridColumn>
+
 </Grid>
+
+<Modal @ref="titlesContainingWord" Size="ModalSize.ExtraLarge" Title="">
+    <BodyTemplate>
+        <Grid 
+            TItem="NewsOutletTitle"   
+            Class="table table-hover table-bordered table-striped"
+            AllowFiltering="true"
+            AllowSorting="true"
+            Responsive="true"
+            AllowPaging="true"
+            PageSize="10"
+            PageSizeSelectorItems="new int[3] { 10, 20, 50 }"
+            Data="Titles"
+        >
+            <GridColumn TItem="NewsOutletTitle" Context="title" HeaderText="NewsOutletName" PropertyName="NewsOutletName" SortKeySelector="item => item.NewsOutletName">
+                @title.NewsOutletName
+            </GridColumn>
+            <GridColumn TItem="NewsOutletTitle" Context="title" HeaderText="Url" PropertyName="Url" SortKeySelector="item => item.Url">
+                @title.Url
+            </GridColumn>
+            <GridColumn TItem="NewsOutletTitle" Context="title" HeaderText="Title" PropertyName="Title" SortKeySelector="item => item.Title">
+                @title.Title
+            </GridColumn>
+        </Grid>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+    </FooterTemplate>
+</Modal>
 
 @code {
     [CascadingParameter]
     public AppState ApplicationState { get; set; }
 
+    private IEnumerable<NewsOutletTitle> Titles = default!;
     BlazorBootstrap.Grid<WordFrequency> grid = default!;
+
+    private Modal titlesContainingWord = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    private bool Foo(WordFrequency args)
+    {
+        var foo = "hello";
+        return false;
+    }
+
+    private async void ShowTitlesContainingWord(GridRowEventArgs<WordFrequency> args)
+    {
+        string selectedWord = args.Item.Word;
+        var uriBuilder = new UriBuilder($"{Http.BaseAddress}api/WordFrequency/GetTitlesContainingWord");
+        var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+        query["word"] = selectedWord;
+        uriBuilder.Query = query.ToString();
+        var url = uriBuilder.ToString();
+
+        Titles = await Http.GetFromJsonAsync<NewsOutletTitle[]>(url);
+        titlesContainingWord.Title = GetModalTitle(selectedWord);
+        await titlesContainingWord.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await titlesContainingWord.HideAsync();
+    }
+
     private async Task<GridDataProviderResult<WordFrequency>> WordDataProvider(GridDataProviderRequest<WordFrequency> request)
     {
         return await Task.FromResult(request.ApplyTo(ApplicationState.GroupedWords ?? new List<WordFrequency>()));
+    }
+
+    private string GetModalTitle(string word)
+    {
+        return $"Articles with '{word}' in the title.";
     }
 }

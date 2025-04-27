@@ -13,4 +13,11 @@
         public int Frequency { get; set; }
         public string? NewsOutlet { get; set; }
     }
+
+    public class NewsOutletTitle
+    {
+        public string NewsOutletName { get; set; }
+        public string Title { get; set; }
+        public string Url { get; set; }
+    }
 }

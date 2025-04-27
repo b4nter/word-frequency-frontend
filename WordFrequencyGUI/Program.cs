@@ -8,7 +8,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
-string baseUrl = "https://localhost:7272/";
+string baseUrl = "https://localhost:7272";
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseUrl) });
 
 builder.Services.AddBlazorBootstrap();
